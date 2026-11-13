@@ -1,0 +1,29 @@
+<%# Enlace de salto y cabecera común. locals.auth existe solo con sesión; locals.activo marca la página actual. %>
+<%
+  const sesion = locals.auth;
+  const activo = locals.activo;
+%>
+    <a class="saltar" href="#contenido">Saltar al contenido</a>
+    <header class="cabecera">
+      <div class="cabecera-interior">
+        <a class="marca" href="/">Login Log</a>
+        <nav aria-label="Principal">
+          <ul class="menu">
+            <% if (sesion) { %>
+              <li><a href="/cuenta"<% if (activo === 'cuenta') { %> aria-current="page"<% } %>>Mi cuenta</a></li>
+              <% if (sesion.role === 'admin') { %>
+                <li><a href="/admin/logs"<% if (activo === 'auditoria') { %> aria-current="page"<% } %>>Registro de auditoría</a></li>
+              <% } %>
+              <li>
+                <form method="post" action="/logout">
+                  <button type="submit" class="boton boton-secundario">Cerrar sesión</button>
+                </form>
+              </li>
+            <% } else { %>
+              <li><a href="/login"<% if (activo === 'login') { %> aria-current="page"<% } %>>Iniciar sesión</a></li>
+              <li><a href="/registro"<% if (activo === 'registro') { %> aria-current="page"<% } %>>Crear cuenta</a></li>
+            <% } %>
+          </ul>
+        </nav>
+      </div>
+    </header>

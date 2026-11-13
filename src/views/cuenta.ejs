@@ -1,0 +1,49 @@
+<%- include('partials/head', { pageTitle: 'Mi cuenta' }) %>
+<%- include('partials/header', { activo: 'cuenta' }) %>
+    <main id="contenido" tabindex="-1" class="contenido contenido-estrecho">
+      <h1>Mi cuenta</h1>
+
+      <p class="dato-largo">Sesión iniciada como <strong><%= email %></strong></p>
+
+      <% if (cambiada) { %>
+        <p class="aviso aviso-ok" role="status">Contraseña actualizada correctamente.</p>
+      <% } %>
+
+      <% if (error) { %>
+        <p class="aviso aviso-error" role="alert"><%= error %></p>
+      <% } %>
+
+      <section aria-labelledby="cambio-password-titulo">
+        <h2 id="cambio-password-titulo">Cambiar contraseña</h2>
+        <form method="post" action="/cuenta/password" class="formulario">
+          <div class="campo">
+            <label for="currentPassword">Contraseña actual</label>
+            <input
+              id="currentPassword"
+              name="currentPassword"
+              type="password"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+
+          <div class="campo">
+            <label for="newPassword">Nueva contraseña</label>
+            <input
+              id="newPassword"
+              name="newPassword"
+              type="password"
+              autocomplete="new-password"
+              minlength="12"
+              maxlength="128"
+              aria-describedby="newPassword-ayuda"
+              required
+            />
+            <p id="newPassword-ayuda" class="ayuda">Mínimo 12 caracteres.</p>
+          </div>
+
+          <button type="submit" class="boton boton-primario">Actualizar contraseña</button>
+        </form>
+      </section>
+    </main>
+<%- include('partials/footer') %>

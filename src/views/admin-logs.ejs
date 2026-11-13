@@ -1,0 +1,159 @@
+<%- include('partials/head', { pageTitle }) %>
+<%- include('partials/header', { activo: 'auditoria' }) %>
+    <main id="contenido" tabindex="-1" class="contenido contenido-ancho">
+      <h1>Registro de auditoría</h1>
+
+      <% if (cadena) { %>
+        <% if (cadena.ok) { %>
+          <p class="aviso aviso-ok"><%= cadena.texto %></p>
+        <% } else { %>
+          <p class="aviso aviso-error" role="alert"><%= cadena.texto %></p>
+        <% } %>
+        <p class="ayuda">Verificada en UTC: <time datetime="<%= cadena.verificadaEn %>"><%= cadena.verificadaEn %></time>. <a href="<%= cadena.verificarUrl %>">Verificar ahora</a></p>
+      <% } %>
+
+      <% if (error) { %>
+        <p class="aviso aviso-error" role="alert"><%= error %></p>
+      <% } %>
+
+      <form method="get" action="/admin/logs" class="filtros">
+        <fieldset>
+          <legend>Filtros</legend>
+          <div class="filtros-rejilla">
+            <div class="campo">
+              <label for="f-type">Tipo de evento</label>
+              <select id="f-type" name="type">
+                <option value="">Todos</option>
+                <% for (const t of tipos) { %>
+                  <option value="<%= t %>"<% if (filtros.type === t) { %> selected<% } %>><%= t %></option>
+                <% } %>
+              </select>
+            </div>
+
+            <div class="campo">
+              <label for="f-outcome">Resultado</label>
+              <select id="f-outcome" name="outcome">
+                <option value="">Todos</option>
+                <option value="success"<% if (filtros.outcome === 'success') { %> selected<% } %>>Éxito</option>
+                <option value="failure"<% if (filtros.outcome === 'failure') { %> selected<% } %>>Fallo</option>
+              </select>
+            </div>
+
+            <div class="campo">
+              <label for="f-user">Usuario (UUID)</label>
+              <input id="f-user" name="user" type="text" value="<%= filtros.user %>" maxlength="36" autocomplete="off" spellcheck="false" class="dato" />
+            </div>
+
+            <div class="campo">
+              <label for="f-ip">Dirección IP</label>
+              <input id="f-ip" name="ip" type="text" value="<%= filtros.ip %>" maxlength="45" autocomplete="off" spellcheck="false" class="dato" />
+            </div>
+
+            <div class="campo">
+              <label for="f-desde">Desde (UTC)</label>
+              <input id="f-desde" name="desde" type="text" value="<%= filtros.desde %>" maxlength="24" autocomplete="off" placeholder="AAAA-MM-DD" aria-describedby="f-fecha-ayuda" />
+            </div>
+
+            <div class="campo">
+              <label for="f-hasta">Hasta (UTC)</label>
+              <input id="f-hasta" name="hasta" type="text" value="<%= filtros.hasta %>" maxlength="24" autocomplete="off" placeholder="AAAA-MM-DD" aria-describedby="f-fecha-ayuda" />
+            </div>
+          </div>
+          <p id="f-fecha-ayuda" class="ayuda">Fechas como AAAA-MM-DD o AAAA-MM-DDThh:mm, siempre en UTC. Una fecha sola en "Hasta" incluye ese día completo.</p>
+
+          <div class="acciones">
+            <button type="submit" class="boton boton-primario">Filtrar</button>
+            <a class="boton boton-secundario" href="/admin/logs">Limpiar filtros</a>
+          </div>
+        </fieldset>
+      </form>
+
+      <% if (eventos !== null) { %>
+        <% if (eventos.length === 0) { %>
+          <section aria-labelledby="vacio-titulo" class="vacio-estado">
+            <h2 id="vacio-titulo">Sin eventos</h2>
+            <p>No hay eventos de auditoría para los filtros indicados.</p>
+            <p><a href="/admin/logs">Limpiar filtros</a></p>
+          </section>
+        <% } else { %>
+          <p class="resumen">Mostrando <%= eventos.length %> <%= eventos.length === 1 ? 'evento' : 'eventos' %>, del seq <%= eventos[0].seq %> al seq <%= eventos[eventos.length - 1].seq %>, del más reciente al más antiguo.</p>
+
+          <div class="tabla-contenedor" role="region" aria-label="Eventos de auditoría" tabindex="0">
+            <table class="tabla-eventos">
+              <caption class="solo-lectores">Eventos de auditoría, del más reciente al más antiguo</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Seq</th>
+                  <th scope="col">Fecha y hora (UTC)</th>
+                  <th scope="col">Tipo</th>
+                  <th scope="col">Resultado</th>
+                  <th scope="col">Motivo</th>
+                  <th scope="col">Usuario</th>
+                  <th scope="col">IP</th>
+                  <th scope="col">Estado HTTP</th>
+                  <th scope="col">Request id</th>
+                  <th scope="col">Detalles</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% for (const e of eventos) { %>
+                  <tr data-seq="<%= e.seq %>" data-tipo="<%= e.tipo %>" data-resultado="<%= e.resultado %>">
+                    <th scope="row" class="dato"><%= e.seq %></th>
+                    <td><time datetime="<%= e.instante %>"><%= e.instante %></time></td>
+                    <td><%= e.tipo %></td>
+                    <td>
+                      <% if (e.resultado === 'success') { %>
+                        <span class="resultado resultado-exito">Éxito</span>
+                      <% } else { %>
+                        <span class="resultado resultado-fallo">Fallo</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <% if (e.motivo) { %><%= e.motivo %><% } else { %><span aria-hidden="true">-</span><span class="solo-lectores">sin motivo</span><% } %>
+                    </td>
+                    <td class="dato">
+                      <% if (e.usuario) { %><%= e.usuario %><% } else { %><span aria-hidden="true">-</span><span class="solo-lectores">sin usuario</span><% } %>
+                    </td>
+                    <td class="dato">
+                      <% if (e.ip) { %><%= e.ip %><% } else { %><span aria-hidden="true">-</span><span class="solo-lectores">sin IP</span><% } %>
+                    </td>
+                    <td>
+                      <% if (e.estado !== null) { %><%= e.estado %><% } else { %><span aria-hidden="true">-</span><span class="solo-lectores">sin estado</span><% } %>
+                    </td>
+                    <td class="dato">
+                      <% if (e.requestId) { %><%= e.requestId %><% } else { %><span aria-hidden="true">-</span><span class="solo-lectores">sin request id</span><% } %>
+                    </td>
+                    <td>
+                      <details class="detalle">
+                        <summary>Ver<span class="solo-lectores"> detalles del evento <%= e.seq %></span></summary>
+                        <dl>
+                          <dt>Detalles</dt>
+                          <dd><pre><%= e.detalles %></pre></dd>
+                          <dt>User agent</dt>
+                          <dd><%= e.userAgent || 'sin dato' %></dd>
+                          <dt>Método y ruta</dt>
+                          <dd><%= e.metodo || 'sin método' %> <%= e.ruta || 'sin ruta' %></dd>
+                          <dt>Session id</dt>
+                          <dd class="dato"><%= e.sessionId || 'sin sesión' %></dd>
+                          <dt>Hash</dt>
+                          <dd class="dato"><%= e.hash %></dd>
+                          <dt>Hash anterior</dt>
+                          <dd class="dato"><%= e.hashAnterior %></dd>
+                        </dl>
+                      </details>
+                    </td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+
+          <% if (anterior) { %>
+            <nav class="paginacion" aria-label="Paginación">
+              <a class="boton boton-secundario" href="<%= anterior %>">Eventos anteriores</a>
+            </nav>
+          <% } %>
+        <% } %>
+      <% } %>
+    </main>
+<%- include('partials/footer') %>

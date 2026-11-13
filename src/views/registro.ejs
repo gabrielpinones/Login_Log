@@ -1,0 +1,43 @@
+<%- include('partials/head', { pageTitle: 'Crear cuenta' }) %>
+<%- include('partials/header', { activo: 'registro' }) %>
+    <main id="contenido" tabindex="-1" class="contenido contenido-estrecho">
+      <h1>Crear cuenta</h1>
+
+      <% if (error) { %>
+        <p class="aviso aviso-error" role="alert"><%= error %></p>
+      <% } %>
+
+      <form method="post" action="/registro" class="formulario">
+        <div class="campo">
+          <label for="email">Correo electrónico</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="username"
+            maxlength="254"
+            required
+          />
+        </div>
+
+        <div class="campo">
+          <label for="password">Contraseña</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="new-password"
+            minlength="12"
+            maxlength="128"
+            aria-describedby="password-ayuda"
+            required
+          />
+          <p id="password-ayuda" class="ayuda">Mínimo 12 caracteres.</p>
+        </div>
+
+        <button type="submit" class="boton boton-primario">Crear cuenta</button>
+      </form>
+
+      <p class="alterno">¿Ya tienes cuenta? <a href="/login">Iniciar sesión</a></p>
+    </main>
+<%- include('partials/footer') %>
